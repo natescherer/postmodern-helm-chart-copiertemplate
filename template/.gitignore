@@ -6,3 +6,7 @@ out/
 
 # Data files for running copier
 data.yml
+
+# Helm packaging artifacts
+**.tgz
+**.lock
