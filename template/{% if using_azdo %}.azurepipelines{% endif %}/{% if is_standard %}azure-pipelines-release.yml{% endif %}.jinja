@@ -69,11 +69,11 @@ steps:
       inlineScript: |
         $CredsJson = az acr credential show --name $(AcrName) --only-show-errors
         $CredsObject = ConvertFrom-Json ($CredsJson -join "`n")
-        helm registry login $(AcrName) --username $CredsObject.username --password $CredsObject.passwords[0].value
+        helm registry login $(AcrName).azurecr.io --username $CredsObject.username --password $CredsObject.passwords[0].value
 {%- endif %}
 {%- if acr_login_method == "Admin Credentials (Manually Specified)" %}
   - pwsh: |
-      helm registry login $(AcrName) --username $(AcrName) --password $env:AcrPassword
+      helm registry login $(AcrName).azurecr.io --username $(AcrName) --password $env:AcrPassword
     displayName: Authenticate to ACR
     env:
       AcrPassword: $(AcrPasswordSecret)
@@ -82,7 +82,7 @@ steps:
   - pwsh: |
       helm package src/$(ChartName) --dependency-update
       $TgzPath = (Get-ChildItem -Filter *.tgz).FullName
-      helm push $TgzPath oci://$(AcrName)/helm/$(AcrChartPrefix)
+      helm push $TgzPath oci://$(AcrName).azurecr.io/helm/$(AcrChartPrefix)
     failOnStderr: false # Helm writes to stderr during push normally
     displayName: Package & Push Chart
   - pwsh: |
