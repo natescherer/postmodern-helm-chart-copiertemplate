@@ -2,6 +2,26 @@
 
 ## Creating New Project
 
+1. Execute copier to lay down the template
+1. Edit `src/CHART-NAME-HERE/Chart.yaml` to set the value of `appVersion` as appropriate for your chart
+    * Note you do *not* have to set the `version` value, as the Helm chart will be automatically versioned via commit-and-tag-version
+1. Edit the rest of the Helm chart as appropriate. The files inside `src/CHART-NAME-HERE` are the default output of `helm create`.
+
+### Registry Type
+
+#### Azure Container Registry
+
+##### If Using Auth Mode 'Admin Credentials (Manually Specified)'
+
+1. In the Azure Portal, open the ACR, then go to `Settings > Access keys`
+1. Make sure `Admin user` is checked, then copy the value for `password`
+1. In Azure DevOps, open and edit the pipeline
+1. Click the Variables button, then create a variable as follows:
+    * Name: `AcrPasswordSecret`
+    * Value: The password you copied above
+    * Keep this value secret: `Checked`
+1. Click OK, then Save
+
 ## Applying to Existing Project
 
 To apply this template to an existing project, follow these steps:
