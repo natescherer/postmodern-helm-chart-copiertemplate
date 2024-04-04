@@ -38,11 +38,8 @@ developer_platform:
   type: str
   help: The platform where you are going to host your Git repo and CI/CD.
   choices:
-    GitHub:
-      value: GitHub
-      validator: Not Currently Implemented
-    Azure DevOps:
-      value: Azure DevOps
+    - GitHub
+    - Azure DevOps
 
 # Restore New/Existing validators once https://github.com/copier-org/copier/issues/1050 is resolved
 repo_actions:
@@ -183,41 +180,6 @@ lifecycle:
     - Stable
     - Inactive
 
-container_registry_type:
-  type: str
-  help: Choose what type of container registry this repo should deploy to.
-  choices:
-    - Azure Container Registry
-  when: "{{ project_type == 'Standard' }}"
-
-acr_login_method:
-  type: str
-  help: Choose login method for Azure Container Registry.
-  choices:
-    - Admin Credentials (Automatic via Service Connection)
-    - Admin Credentials (Manually Specified)
-  when: "{{ container_registry_type == 'Azure Container Registry' }}"
-
-acr_name:
-  type: str
-  help: The name of the Azure Container Registry
-  when: "{{ container_registry_type == 'Azure Container Registry' }}"
-
-acr_service_connection:
-  type: str
-  help: The name of the Azure DevOps Service Connection that has rights to the ACR.
-  when: "{{ acr_login_method == 'Admin Credentials (Automatic via Service Connection)' }}"
-
-acr_chart_prefix:
-  type: str
-  help: (OPTIONAL) If you share an ACR between multiple teams, put a team name here to have your charts logically separated.
-  when: "{{ container_registry_type == 'Azure Container Registry' }}"
-
-helm_chart_name:
-  type: str
-  help: The name of the helm chart. (Make it something that will be globally unique.)
-  when: "{{ project_type == 'Standard' }}"
-
 ## Computed Values
 
 using_github:
@@ -306,5 +268,5 @@ _tasks:
     {%- if should_set_repo_settings and using_azdo -%}
     invoke create-pipelines-azdo --answers-json '{{ _copier_answers | to_json }}'
     {%- endif -%}
-  - invoke delete-unneded-template-files
+  - invoke delete-unneeded-template-files
 {% endraw %}
