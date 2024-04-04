@@ -78,6 +78,7 @@ steps:
     env:
       AcrPassword: $(AcrPasswordSecret)
 {%- endif %}
+{%- endif %}
   - pwsh: |
       helm package src/$(ChartName) --dependency-update
       $TgzPath = (Get-ChildItem -Filter *.tgz).FullName
