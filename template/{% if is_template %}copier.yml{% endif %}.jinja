@@ -26,6 +26,7 @@ parent_template_url:
   when: false
 
 {%- raw %}
+
 ## Questions
 author_name:
   type: str
@@ -305,3 +306,4 @@ _tasks:
     invoke create-pipelines-azdo --answers-json '{{ _copier_answers | to_json }}'
     {%- endif -%}
   - invoke delete-unneeded-template-files
+{%- endraw %}
