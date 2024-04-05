@@ -58,17 +58,18 @@ jobs:
           releaseVersion: ${{ steps.commit-and-tag-version.outputs.newVersion }}
       # The following step can be removed once https://github.com/copier-org/copier/pull/1511 is implemented
       - run: |
-          if (Test-Path "template/template") {
-            Remove-Item -Path "template/template" -Recurse -Force
+          if (Test-Path "template/{% if is_template %}template{% endif %}") {
+            Remove-Item -Path "template/{% if is_template %}template{% endif %}" -Recurse -Force
           }
           Copy-Item -Path "template" -Destination "template_copy" -Recurse
           Move-Item -Path "template_copy" -Destination "template"
-          Rename-Item -Path "template/template_copy" -NewName "template"
-          Get-ChildItem -Path "template/template" -Force -Recurse -Directory | ForEach {if ($_.Name -like "*{*") {$NewName = (Join-Path (Split-Path -Path $_.FullName -Parent) ($_.Name).Replace("{","[")); Rename-Item -LiteralPath $_.FullName -NewName $NewName}}
+          Rename-Item -Path "template/template_copy" -NewName "{% if is_template %}template{% endif %}"
+          # Rename bracket folders
+          Get-ChildItem -Path "template/{% if is_template %}template{% endif %}" -Force -Recurse -Directory | ForEach {if ($_.Name -like "*{*") {$NewPath = (Join-Path (Split-Path -Path $_.FullName -Parent) $_.Name.Replace("{","[")); Move-Item -LiteralPath $_.FullName -Destination $NewPath -Force}}
           # Rename bracket files
-          Get-ChildItem -Path "template/template" -Force -Recurse | ForEach {if ($_.Name -like "*{*") {$NewPath = (Join-Path (Split-Path -Path $_.FullName -Parent) $_.Name.Replace("{","[")); Move-Item -LiteralPath $_.FullName -Destination $NewPath -Force}}
+          Get-ChildItem -Path "template/{% if is_template %}template{% endif %}" -Force -Recurse | ForEach {if ($_.Name -like "*{*") {$NewPath = (Join-Path (Split-Path -Path $_.FullName -Parent) $_.Name.Replace("{","[")); Move-Item -LiteralPath $_.FullName -Destination $NewPath -Force}}
           # Rename raw files
-          Get-ChildItem -Path "template/template" -Force -Recurse | ForEach {if ($_.Name -like "*.jinja") {$NewPath = (Join-Path (Split-Path -Path $_.FullName -Parent) $_.Name.Replace(".jinja",".jinja.raw")); Move-Item -LiteralPath $_.FullName -Destination $NewPath -Force}}
+          Get-ChildItem -Path "template/{% if is_template %}template{% endif %}" -Force -Recurse | ForEach {if ($_.Name -like "*.jinja") {$NewPath = (Join-Path (Split-Path -Path $_.FullName -Parent) $_.Name.Replace(".jinja",".jinja.raw")); Move-Item -LiteralPath $_.FullName -Destination $NewPath -Force}}
         name: Create Subtemplate Directory
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v6
