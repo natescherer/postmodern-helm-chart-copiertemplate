@@ -3,8 +3,8 @@
 This file is to be executed with https://www.pyinvoke.org/ in Python 3.6+.
 """
 import json
-import os
 import shutil
+import os
 import urllib.parse
 import githubkit
 import requests
@@ -15,11 +15,21 @@ from invoke import task
 from rich import print
 
 @task
-def unpack_and_delete_template_tarball(c):
-    """For project_type == 'Template', unpack and delete template/clean_template.tarball"""
-    print("[bold green]*** 'unpack-and-delete-template-tarball' task start ***[/bold green]")
-    shutil.unpack_archive("template_copy.tar.gz", ".")
-    print("[bold green]*** 'unpack-and-delete-template-tarball' task end ***[/bold green]")
+def rename_template_files(c):
+    """Renames files in template that were renamed during build to block rendering."""
+    print("[bold green]*** 'rename-template-files' task start ***[/bold green]")
+    if shutil.which("pwsh"):
+          # Wipe any conflicting target
+          c.run("pwsh -c 'Get-ChildItem -Path \"template\" -Force -Recurse -Directory | ForEach {if (($_.Name -like \"*[[]*\") -and ($_.FullName -notlike \"*{% if is_template %}template{% endif %}*\")) {$NewPath = (Join-Path (Split-Path -Path $_.FullName -Parent) ($_.Name).Replace(\"[\",\"{\")); if (Test-Path $NewPath) {Remove-Item $NewPath -Force -Recurse}}}'")
+          # Rename bracket folders
+          c.run("pwsh -c 'Get-ChildItem -Path \"template\" -Force -Recurse -Directory | ForEach {if (($_.Name -like \"*[[]*\") -and ($_.FullName -notlike \"*{% if is_template %}template{% endif %}*\")) {$NewName = (Join-Path (Split-Path -Path $_.FullName -Parent) ($_.Name).Replace(\"[\",\"{\")); Rename-Item -LiteralPath $_.FullName -NewName $NewName}}'")
+          # Rename bracket files
+          c.run("pwsh -c 'Get-ChildItem -Path \"template\" -Force -Recurse | ForEach {if (($_.Name -like \"*[[]*\") -and ($_.FullName -notlike \"*{% if is_template %}template{% endif %}*\")) {$NewPath = (Join-Path (Split-Path -Path $_.FullName -Parent) $_.Name.Replace(\"[\",\"{\")); Move-Item -LiteralPath $_.FullName -Destination $NewPath -Force}}'")
+          # Rename raw files
+          c.run("pwsh -c 'Get-ChildItem -Path \"template\" -Force -Recurse | ForEach {if (($_.Name -like \"*.jinja.raw\") -and ($_.FullName -notlike \"*{% if is_template %}template{% endif %}*\")) {$NewPath = (Join-Path (Split-Path -Path $_.FullName -Parent) $_.Name.Replace(\".jinja.raw\",\".jinja\")); Move-Item -LiteralPath $_.FullName -Destination $NewPath -Force}}'")
+    else:
+        raise("PowerShell needs installed for the time being. Sorry.")
+    print("[bold green]*** 'rename-template-files' task end ***[/bold green]")
 
 @task
 def create_repo_github(c, answers_json):
@@ -242,7 +252,6 @@ def create_pipelines_azdo(c, answers_json):
 def delete_unneeded_template_files(c):
     """Delete files used only in the template build process, including this tasks.py file"""
     print("[bold green]*** 'delete-unneeded-template-files' task start ***[/bold green]")
-    os.remove("template_copy.tar.gz")
     os.remove("token.json")
     os.remove(__file__)
     print("[bold green]*** 'delete-unneeded-template-files' task end ***[/bold green]")
