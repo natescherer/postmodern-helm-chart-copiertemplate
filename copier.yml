@@ -1,16 +1,4 @@
-## Inherited Variables from Parent Template
-parent_template_name:
-  type: str
-  default: Postmodern Helm Chart Copier Template
-  when: false
-parent_template_url:
-  type: str
-  default: "https://github.com/natescherer/postmodern-helm-chart-copiertemplate"
-  when: false
-
-
 ## Initial Settings
-
 _min_copier_version: "9.1.1"
 
 _jinja_extensions:
@@ -27,8 +15,16 @@ _jinja_extensions:
 
 _subdirectory: template
 
+## Inherited Variables from Parent Template
+parent_template_name:
+  type: str
+  default: Postmodern Helm Chart Copier Template
+  when: false
+parent_template_url:
+  type: str
+  default: "https://github.com/natescherer/postmodern-helm-chart-copiertemplate"
+  when: false
 ## Questions
-
 author_name:
   type: str
   help: The name to whom this project will be credited. Autodetect attempted from Git 'user.name'.
