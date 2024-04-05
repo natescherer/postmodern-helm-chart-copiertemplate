@@ -63,17 +63,20 @@ jobs:
 {%- endif %}
       # The following step can be removed once https://github.com/copier-org/copier/pull/1511 is implemented
       - run: |
+{%- raw %}
           if (Test-Path "template/{% if is_template %}template{% endif %}") {
             Remove-Item -Path "template/{% if is_template %}template{% endif %}" -Recurse -Force
           }
           Copy-Item -Path "template" -Destination "template_copy" -Recurse
           Move-Item -Path "template_copy" -Destination "template"
           Rename-Item -Path "template/template_copy" -NewName "{% if is_template %}template{% endif %}"
-          Get-ChildItem -Path "template/{% if is_template %}template{% endif %}" -Force -Recurse -Directory | ForEach {if ($_.Name -like "*{*") {$NewName = (Join-Path (Split-Path -Path $_.FullName -Parent) ($_.Name).Replace("{","[")); Rename-Item -LiteralPath $_.FullName -NewName $NewName}}
+          # Rename bracket folders
+          Get-ChildItem -Path "template/{% if is_template %}template{% endif %}" -Force -Recurse -Directory | ForEach {if ($_.Name -like "*{*") {$NewPath = (Join-Path (Split-Path -Path $_.FullName -Parent) $_.Name.Replace("{","[")); Move-Item -LiteralPath $_.FullName -Destination $NewPath -Force}}
           # Rename bracket files
           Get-ChildItem -Path "template/{% if is_template %}template{% endif %}" -Force -Recurse | ForEach {if ($_.Name -like "*{*") {$NewPath = (Join-Path (Split-Path -Path $_.FullName -Parent) $_.Name.Replace("{","[")); Move-Item -LiteralPath $_.FullName -Destination $NewPath -Force}}
           # Rename raw files
           Get-ChildItem -Path "template/{% if is_template %}template{% endif %}" -Force -Recurse | ForEach {if ($_.Name -like "*.jinja") {$NewPath = (Join-Path (Split-Path -Path $_.FullName -Parent) $_.Name.Replace(".jinja",".jinja.raw")); Move-Item -LiteralPath $_.FullName -Destination $NewPath -Force}}
+{%- endraw %}
         name: Create Subtemplate Directory
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v6
