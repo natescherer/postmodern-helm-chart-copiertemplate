@@ -56,16 +56,20 @@ jobs:
         with:
           mode: release
           releaseVersion: ${{ steps.commit-and-tag-version.outputs.newVersion }}
-      - run: Remove-Item -Path template/template_copy.tar.gz -ErrorAction SilentlyContinue
-        name: Remove Old template_copy.tar.gz
-      - name: Create Template Tarball
-        uses: thedoctor0/zip-release@0.7.6
-        with:
-          type: tar
-          filename: template_copy.tar.gz
-          path: template
-      - run: Move-Item -Path template_copy.tar.gz -Destination template
-        name: Move Tarball
+      # The following step can be removed once https://github.com/copier-org/copier/pull/1511 is implemented
+      - run: |
+          if (Test-Path "template/template") {
+            Remove-Item -Path "template/template" -Recurse -Force
+          }
+          Copy-Item -Path "template" -Destination "template_copy" -Recurse
+          Move-Item -Path "template_copy" -Destination "template"
+          Rename-Item -Path "template/template_copy" -NewName "template"
+          Get-ChildItem -Path "template/template" -Force -Recurse -Directory | ForEach {if ($_.Name -like "*{*") {$NewName = (Join-Path (Split-Path -Path $_.FullName -Parent) ($_.Name).Replace("{","[")); Rename-Item -LiteralPath $_.FullName -NewName $NewName}}
+          # Rename bracket files
+          Get-ChildItem -Path "template/template" -Force -Recurse | ForEach {if ($_.Name -like "*{*") {$NewPath = (Join-Path (Split-Path -Path $_.FullName -Parent) $_.Name.Replace("{","[")); Move-Item -LiteralPath $_.FullName -Destination $NewPath -Force}}
+          # Rename raw files
+          Get-ChildItem -Path "template/template" -Force -Recurse | ForEach {if ($_.Name -like "*.jinja") {$NewPath = (Join-Path (Split-Path -Path $_.FullName -Parent) $_.Name.Replace(".jinja",".jinja.raw")); Move-Item -LiteralPath $_.FullName -Destination $NewPath -Force}}
+        name: Create Subtemplate Directory
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v6
         id: cpr
@@ -75,15 +79,13 @@ jobs:
           branch: release/v${{ steps.commit-and-tag-version.outputs.newVersion }}
           title: "chore: release v${{ steps.commit-and-tag-version.outputs.newVersion }}"
           body: ${{ steps.changelog.outputs.releasenotes }}
-      # This step can be removed once tarball creation can be moved into the template and out of the action
+      # This step can be removed once subtemplate directory creation can be moved into the template and out of the action
       - run: |
-          
           git config user.name ${{ github.actor }}
           git config user.email ${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com
           git checkout release/v${{ steps.commit-and-tag-version.outputs.newVersion }}
           git tag v${{ steps.commit-and-tag-version.outputs.newVersion }}
           git push origin v${{ steps.commit-and-tag-version.outputs.newVersion }}
-          
         name: Add Version Tag
       - name: Enable Pull Request Automerge
         run: gh pr merge --merge --auto "${{ steps.cpr.outputs.pull-request-number }}"
