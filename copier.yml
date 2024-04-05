@@ -24,6 +24,7 @@ parent_template_url:
   type: str
   default: "https://github.com/natescherer/postmodern-helm-chart-copiertemplate"
   when: false
+
 ## Questions
 author_name:
   type: str
