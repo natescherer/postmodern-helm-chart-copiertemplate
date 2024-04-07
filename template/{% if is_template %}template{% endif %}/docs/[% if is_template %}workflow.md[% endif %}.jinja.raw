@@ -11,7 +11,7 @@
 
 #### Azure Container Registry
 
-##### If Using Auth Mode 'Admin Credentials (Manually Specified)'
+##### If Using Auth Mode 'Admin Credentials via Pipeline Variable'
 
 1. In the Azure Portal, open the ACR, then go to `Settings > Access keys`
 1. Make sure `Admin user` is checked, then copy the value for `password`

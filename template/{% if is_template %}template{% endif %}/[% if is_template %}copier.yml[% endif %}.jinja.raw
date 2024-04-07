@@ -193,8 +193,8 @@ acr_login_method:
   type: str
   help: Choose login method for Azure Container Registry.
   choices:
-    - Admin Credentials (Automatic via Service Connection)
-    - Admin Credentials (Manually Specified)
+    - Admin Credentials via Service Connection
+    - Admin Credentials via Pipeline Variable
   when: "{{ container_registry_type == 'Azure Container Registry' }}"
 
 acr_name:
@@ -205,7 +205,7 @@ acr_name:
 acr_service_connection:
   type: str
   help: The name of the Azure DevOps Service Connection that has rights to the ACR.
-  when: "{{ acr_login_method == 'Admin Credentials (Automatic via Service Connection)' }}"
+  when: "{{ acr_login_method == 'Admin Credentials via Service Connection' }}"
 
 acr_chart_prefix:
   type: str
