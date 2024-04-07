@@ -11,7 +11,7 @@ variables:
   AcrName: {{ acr_name }}
   AcrChartPrefix: {{ acr_chart_prefix }}
 {%- endif %}
-{%- if acr_login_method == "Admin Credentials (Automatic via Service Connection)" %}
+{%- if acr_login_method == "Admin Credentials via Service Connection" %}
   AcrAzSubscriptionServiceConnection: {{ acr_service_connection }}
 {%- endif %}
   ChartName: {{ helm_chart_name }}
@@ -68,7 +68,7 @@ stages:
             displayName: Set Version in Chart
             workingDirectory: src/$(ChartName)
         {%- if container_registry_type == "Azure Container Registry" %}
-        {%- if acr_login_method == "Admin Credentials (Automatic via Service Connection)" %}
+        {%- if acr_login_method == "Admin Credentials via Service Connection" %}
           - task: AzureCLI@2
             displayName: Authenticate to ACR
             inputs:
@@ -80,7 +80,7 @@ stages:
                 $CredsObject = ConvertFrom-Json ($CredsJson -join "`n")
                 helm registry login $(AcrName).azurecr.io --username $CredsObject.username --password $CredsObject.passwords[0].value
         {%- endif %}
-        {%- if acr_login_method == "Admin Credentials (Manually Specified)" %}
+        {%- if acr_login_method == "Admin Credentials via Pipeline Variable" %}
           - pwsh: |
               helm registry login $(AcrName).azurecr.io --username $(AcrName) --password $env:AcrPassword
             displayName: Authenticate to ACR
