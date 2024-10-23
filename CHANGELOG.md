@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.1](https://github.com/natescherer/postmodern-helm-chart-copiertemplate/compare/v0.2.0...v0.2.1) (2024-10-23)
+
+
+### Bug Fixes
+
+* Pull gh actions bot from all-contributors ([0c0aa99](https://github.com/natescherer/postmodern-helm-chart-copiertemplate/commit/0c0aa99aa0ec861abb459548a672f8a1be59f769))
+
 ## [0.2.0](https://github.com/natescherer/postmodern-helm-chart-copiertemplate/compare/v0.0.1...v0.2.0) (2024-10-23)
 
 
